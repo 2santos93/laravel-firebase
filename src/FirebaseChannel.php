@@ -36,7 +36,6 @@ class FirebaseChannel
     {
         $this->client = $client;
         $this->events = $events;
-        dd($this->events);
     }
 
     /**
