@@ -36,6 +36,7 @@ class FirebaseChannel
     {
         $this->client = $client;
         $this->events = $events;
+        dd($this->events);
     }
 
     /**
@@ -57,12 +58,35 @@ class FirebaseChannel
 
         try {
             foreach ($devices as $device) {
-                $message = (new Message())
-                    ->addRecipient(new Device($device))
-                    ->setNotification($firebase->notification)
-                    ->setData($firebase->data);
 
-                $this->client->send($message);
+                $exp = explode("|",$device);
+                if(count($exp) > 1)
+                {
+                    $device = $exp[1];
+                    if($exp[0] == "a")
+                    {
+                        $message = (new Message())
+                            ->addRecipient(new Device($device))
+                            ->setData($firebase->data)
+                            ->setNotification($firebase->notification);
+                        $response = $this->client->send($message);
+                    }
+                    else if($exp[0] == "i")
+                    {
+                        $message = (new Message())
+                            ->addRecipient(new Device($device))
+                            ->setData($firebase->data)
+                            ->setNotification($firebase->notification)
+                            ->setContentAvailable(true);
+                        $response = $this->client->send($message);
+                    }
+                }
+                else
+                {
+                    $this->message->addRecipient(new Device($device))
+                        ->setData($firebase->data);
+                    $response = $this->client->send($this->message);
+                }
             }
         } catch (Exception $e) {
             $this->events->fire(
